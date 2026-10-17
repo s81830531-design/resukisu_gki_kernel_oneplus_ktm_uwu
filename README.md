@@ -1,4 +1,4 @@
-# OnePlus Ace6 (KTM) uwuAOSP Kernel · ReSukiSU
+﻿# OnePlus Ace6 (KTM) uwuAOSP Kernel · ReSukiSU
 
 用于 OnePlus Ace6（一加 Ace6，KTM）uwuAOSP 的 Linux 6.6.142 内核源码快照，集成 ReSukiSU v4.2.0-rc3。
 
@@ -30,6 +30,7 @@
 | Root 集成 | ReSukiSU v4.2.0-rc3 |
 | ReSukiSU 提交 | `239e1e8871b8fcd51a6e5b3002e0ba522fdd99fb` |
 | KernelSU Hook | Tracepoint |
+| Droidspaces | 支持 (SysV IPC, NTSYNC, EVDI) |
 | SUSFS | 当前配置未启用 |
 
 ## 本仓库整理内容
@@ -77,3 +78,4 @@ ReSukiSU 以固定版本源码收录，不包含其独立 Git 元数据，重新
 保留各组件原有许可证、SPDX 标识和版权声明，各组件适用各自许可证。
 
 SGX 自测目录中的 sign_key.pem 与本机 uwuAOSP、Avium 两份内核源码中的同名文件一致，随源码保留；本次尚未完成与公开上游版本的独立比对。
+
