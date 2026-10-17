@@ -16,6 +16,10 @@
 #include <linux/seq_file.h>
 #include <linux/vmalloc.h>
 #include <linux/slab.h>
+#ifdef CONFIG_REKERNEL
+#include "../rekernel/rekernel.h"
+#endif
+#include <linux/sched/task.h>
 #include <linux/sched.h>
 #include <linux/list_lru.h>
 #include <linux/ratelimit.h>
@@ -459,6 +463,24 @@ static struct binder_buffer *binder_alloc_new_buf_locked(
 	}
 
 	if (is_async && alloc->free_async_space < size) {
+#ifdef CONFIG_REKERNEL
+		if (alloc->free_async_space < 3 * (size + sizeof(struct binder_buffer))
+			|| (alloc->free_async_space < REKERNEL_WARN_AHEAD_SPACE)) {
+			struct task_struct *proc_task = NULL;
+			proc_task = find_get_task_by_vpid(alloc->pid);
+			if (proc_task != NULL) {
+				if (rekernel_server_start() == 0 &&
+				    rekernel_line_is_frozen(proc_task)) {
+					int binder_kmsg_len;
+					char binder_kmsg[REKERNEL_PACKET_SIZE];
+					binder_kmsg_len = snprintf(binder_kmsg, sizeof(binder_kmsg), "type=Binder,bindertype=free_buffer_full,oneway=1,from_pid=%d,from=%d,target_pid=%d,target=%d;", current->pid, task_uid(current).val, proc_task->pid, task_uid(proc_task).val);
+					if (binder_kmsg_len > 0 && binder_kmsg_len < sizeof(binder_kmsg))
+						rekernel_send_netlink(binder_kmsg, binder_kmsg_len);
+				}
+				put_task_struct(proc_task);
+			}
+		}
+#endif
 		binder_alloc_debug(BINDER_DEBUG_BUFFER_ALLOC,
 			     "%d: binder_alloc_buf size %zd failed, no async space left\n",
 			      alloc->pid, size);

@@ -21,6 +21,9 @@
 #include <linux/sched/task_stack.h>
 #include <linux/sched/cputime.h>
 #include <linux/file.h>
+#ifdef CONFIG_REKERNEL
+#include "../drivers/rekernel/rekernel.h"
+#endif
 #include <linux/fs.h>
 #include <linux/mm.h>
 #include <linux/proc_fs.h>
@@ -1320,6 +1323,17 @@ int do_send_sig_info(int sig, struct kernel_siginfo *info, struct task_struct *p
 	unsigned long flags;
 	int ret = -ESRCH;
 	trace_android_vh_do_send_sig_info(sig, current, p);
+#ifdef CONFIG_REKERNEL
+	if (rekernel_server_start() == 0) {
+		if (rekernel_line_is_frozen(p) && (sig == SIGKILL || sig == SIGTERM || sig == SIGABRT || sig == SIGQUIT)) {
+			int signal_kmsg_len;
+			char signal_kmsg[REKERNEL_PACKET_SIZE];
+			signal_kmsg_len = snprintf(signal_kmsg, sizeof(signal_kmsg), "type=Signal,signal=%d,killer_pid=%d,killer=%d,dst_pid=%d,dst=%d;", sig, task_tgid_nr(current), task_uid(current).val, task_tgid_nr(p), task_uid(p).val);
+			if (signal_kmsg_len > 0 && signal_kmsg_len < sizeof(signal_kmsg))
+				rekernel_send_netlink(signal_kmsg, signal_kmsg_len);
+		}
+	}
+#endif
 	if (lock_task_sighand(p, &flags)) {
 		ret = send_signal_locked(sig, info, p, type);
 		unlock_task_sighand(p, &flags);

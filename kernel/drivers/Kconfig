@@ -246,3 +246,5 @@ source "drivers/cdx/Kconfig"
 endmenu
 
 source "drivers/kernelsu/Kconfig"
+
+source "drivers/rekernel/Kconfig"

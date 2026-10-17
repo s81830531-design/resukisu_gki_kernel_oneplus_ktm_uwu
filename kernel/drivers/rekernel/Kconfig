@@ -1,0 +1,15 @@
+﻿# SPDX-License-Identifier: GPL-2.0-only
+
+config REKERNEL
+	bool "Re:Kernel event netlink bridge"
+	depends on ANDROID_BINDER_IPC
+	depends on NET
+	depends on PROC_FS
+	depends on FREEZER
+	default n
+	help
+	  Build the Re:Kernel event bridge used by the experimental NoActive
+	  integration.  The implementation is built in because binder, binder_alloc
+	  and signal call its API directly.  The ReSukiSU Manual profile supplies
+	  the surrounding root/hook contract; it is not a dependency of this
+	  driver.  Userspace protocol and runtime behavior are validated separately.
